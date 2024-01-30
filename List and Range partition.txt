@@ -1,0 +1,13 @@
+create table employee(eid int,ename varchar(50),estate varchar(50)) partition by list(estate)(
+    partition east values('wb','odissa'),
+    partition west values('mh','gj'),
+    partition south values('ap','tamil','kerla'),
+    partition north values('up','hp'),
+   partition center values  ('mp'));
+
+create type address as object(city varchar(50),state varchar(50));
+
+
+
+create table tax(eid int,deptid int,deptname varchar(40),taxamt int,sate varchar(50)) partition by range(taxamt)
+  (partition p1  values less than(20001),partition p2  values less than(30001),partition p3 values less than (50001),partition p4 values less than (maxvalue)) ;

@@ -1,0 +1,488 @@
+
+SQL*Plus: Release 21.0.0.0.0 - Production on Tue Jan 30 18:58:28 2024
+Version 21.3.0.0.0
+
+Copyright (c) 1982, 2021, Oracle.  All rights reserved.
+
+Enter user-name: sys
+Enter password:
+ERROR:
+ORA-01005: null password given; logon denied
+
+
+Enter user-name: sys sysdba
+SP2-0306: Invalid option.
+Usage: CONN[ECT] [{logon|/|proxy} [AS {SYSDBA|SYSOPER|SYSASM|SYSBACKUP|SYSDG|SYSKM|SYSRAC}] [edition=value]]
+where <logon> ::= <username>[/<password>][@<connect_identifier>]
+      <proxy> ::= <proxyuser>[<username>][/<password>][@<connect_identifier>]
+Enter user-name: sys as sysdba
+Enter password:
+
+Connected to:
+Oracle Database 21c Express Edition Release 21.0.0.0.0 - Production
+Version 21.3.0.0.0
+
+SQL> create table employee(eid int,ename varchar(50),elocation varchar(50)) partition by list(elocation)
+  2  partiton p1 values('east'),
+  3  partition p2 values('west'),
+  4  partition p3 values('south'),
+  5  partition p4 values('north'),
+  6  partition p5 values('center');
+partiton p1 values('east'),
+*
+ERROR at line 2:
+ORA-00922: missing or invalid option
+
+
+SQL> create table employee(eid int,ename varchar(50),elocation varchar(50)) partition by list(elocation)(
+  2  partition p1 values('east'),
+  3  partition p2 values('west'),
+  4  partition p3 values('south'),
+  5  partition p4 values('north'),
+  6  partition p5 values('center');
+
+
+SQL> create table employee(eid int,ename varchar(50),elocation varchar(50)) partition by list(elocation)(
+  2      partition p1 values('east'),
+  3      partition p2 values('west'),
+  4      partition p3 values('south'),
+  5      partition p4 values('north'),
+  6     partition p5 values('center'));
+    
+
+
+SQL> create table employee(eid int,ename varchar(50),elocation varchar(50)) partition by list(elocation)(
+  2      partition p1 values('east'),
+  3      partition p2 values('west'),
+  4      partition p3 values('south'),
+  5      partition p4 values('north'),
+  6     partition p5 values('center'));
+
+Table created.
+
+SQL> drop table employee;
+
+Table dropped.
+
+SQL> create table employee(eid int,ename varchar(50),estate varchar(50)) partition by list(estate)(
+  2      partition east values('wb','odissa'),
+  3      partition west values('mh','gj'),
+  4      partition south values('ap','tamil','kerla'),
+  5      partition north values('up','hp'),
+  6     partition center values in ('mp'));
+   partition center values in ('mp'))
+                           *
+ERROR at line 6:
+ORA-00906: missing left parenthesis
+
+
+SQL> create table employee(eid int,ename varchar(50),estate varchar(50)) partition by list(estate)(
+  2      partition east values('wb','odissa'),
+  3      partition west values('mh','gj'),
+  4      partition south values('ap','tamil','kerla'),
+  5      partition north values('up','hp'),
+  6     partition center values  ('mp'));
+
+Table created.
+
+SQL> insert into employee values(1,'ramesh','mh');
+
+1 row created.
+
+SQL> insert into employee values(1,'ramesh','oddisa');
+insert into employee values(1,'ramesh','oddisa')
+            *
+ERROR at line 1:
+ORA-14400: inserted partition key does not map to any partition
+
+
+SQL> insert into employee values(2,'ramesh','oddisa');
+insert into employee values(2,'ramesh','oddisa')
+            *
+ERROR at line 1:
+ORA-14400: inserted partition key does not map to any partition
+
+
+SQL> insert into employee values(2,'ramesh','odissa');
+
+1 row created.
+
+SQL> select * from center;
+select * from center
+              *
+ERROR at line 1:
+ORA-00942: table or view does not exist
+
+
+SQL> select * from employee partition center;
+select * from employee partition center
+                                 *
+ERROR at line 1:
+ORA-00933: SQL command not properly ended
+
+
+SQL> select * from employee partition by center;
+select * from employee partition by center
+                                    *
+ERROR at line 1:
+ORA-00906: missing left parenthesis
+
+
+SQL> select * from employee partition (center);
+
+no rows selected
+
+SQL> select * from employee partition (west);
+
+       EID ENAME
+---------- --------------------------------------------------
+ESTATE
+--------------------------------------------------
+         1 ramesh
+mh
+
+
+SQL> select * from employee partition (east);
+
+       EID ENAME
+---------- --------------------------------------------------
+ESTATE
+--------------------------------------------------
+         2 ramesh
+odissa
+
+
+SQL> alter table employee merge partition east,partition west into partition we online;
+alter table employee merge partition east,partition west into partition we online
+                           *
+ERROR at line 1:
+ORA-00905: missing keyword
+
+
+SQL> alter table employee merge partitions east, west into partition we online;
+alter table employee merge partitions east, west into partition we online
+            *
+ERROR at line 1:
+ORA-14809: schema does not support ONLINE MERGE PARTITION
+
+
+SQL> alter table employee merge partitions east, west into partition we;
+
+Table altered.
+
+SQL> select * from employee partition(we);
+
+       EID ENAME
+---------- --------------------------------------------------
+ESTATE
+--------------------------------------------------
+         2 ramesh
+odissa
+
+         1 ramesh
+mh
+
+
+SQL> create type address as object(city varchar(50),state varchar(50));
+  2
+  3  /
+
+Type created.
+
+SQL> create table k(name varchar(40),add address);
+create table k(name varchar(40),add address)
+                                *
+ERROR at line 1:
+ORA-00904: : invalid identifier
+
+
+SQL> create table k(name varchar(40),add2 address);
+
+Table created.
+
+SQL> insert into k values('satyam',address('mumbai','maharashtra'));
+
+1 row created.
+
+SQL> select * from k;
+
+NAME
+----------------------------------------
+ADD2(CITY, STATE)
+--------------------------------------------------------------------------------
+satyam
+ADDRESS('mumbai', 'maharashtra')
+
+
+SQL> select add2.city from k where add2.satate='maharashtra';
+select add2.city from k where add2.satate='maharashtra'
+                              *
+ERROR at line 1:
+ORA-00904: "ADD2"."SATATE": invalid identifier
+
+
+SQL> select add2.city from k where address.satate='maharashtra';
+select add2.city from k where address.satate='maharashtra'
+                              *
+ERROR at line 1:
+ORA-00904: "ADDRESS"."SATATE": invalid identifier
+
+
+SQL> select add2.city from k where address.state='maharashtra';
+select add2.city from k where address.state='maharashtra'
+                              *
+ERROR at line 1:
+ORA-00904: "ADDRESS"."STATE": invalid identifier
+
+
+SQL> select add2.city from k where add2.state='maharashtra';
+select add2.city from k where add2.state='maharashtra'
+                              *
+ERROR at line 1:
+ORA-00904: "ADD2"."STATE": invalid identifier
+
+
+SQL> select add2.city from k where add2='maharashtra';
+select add2.city from k where add2='maharashtra'
+       *
+ERROR at line 1:
+ORA-00904: "ADD2"."CITY": invalid identifier
+
+
+SQL> select add2 from k where add2='maharashtra';
+select add2 from k where add2='maharashtra'
+                              *
+ERROR at line 1:
+ORA-00932: inconsistent datatypes: expected UDT got CHAR
+
+
+SQL> select add2 from k where add2.city='maharashtra';
+select add2 from k where add2.city='maharashtra'
+                         *
+ERROR at line 1:
+ORA-00904: "ADD2"."CITY": invalid identifier
+
+
+SQL> select t.add2.state from k t;
+
+ADD2.STATE
+--------------------------------------------------
+maharashtra
+
+SQL> select t.add2.state from k  as t where t.add2.city='mumbai';
+select t.add2.state from k  as t where t.add2.city='mumbai'
+                            *
+ERROR at line 1:
+ORA-00933: SQL command not properly ended
+
+
+SQL> select t.add2.state from k t where t.add2.city='mumbai';
+
+ADD2.STATE
+--------------------------------------------------
+maharashtra
+
+SQL> select t.add2.state from k as t where t.add2.city='mumbai';
+select t.add2.state from k as t where t.add2.city='mumbai'
+                           *
+ERROR at line 1:
+ORA-00933: SQL command not properly ended
+
+
+SQL> select t.add2.state from k t where t.add2.city='mumbai';
+
+ADD2.STATE
+--------------------------------------------------
+maharashtra
+
+SQL> create type myaddress as object(street varchar(50),pincode varchar(10),city varchar(100));/
+  2  /
+
+Warning: Type created with compilation errors.
+
+SQL> create type myaddress as object(street varchar(50),pincode varchar(10),city varchar(100));
+  2  /
+
+Type created.
+
+SQL> create type name as object(fname varchar(50),lname varchar(10),mname varchar(100));
+  2  /
+
+Type created.
+
+SQL> create table customer (cid int,cadd myaddress,cname name,productname varchar(100));
+
+Table created.
+
+SQL> insert into customer values(1,myaddress('bhandup','78','mumbai'),('phadke','omkar','satish'),'monitor');
+insert into customer values(1,myaddress('bhandup','78','mumbai'),('phadke','omkar','satish'),'monitor')
+                                                                          *
+ERROR at line 1:
+ORA-00907: missing right parenthesis
+
+
+SQL> insert into customer values(1,myaddress('bhandup','78','mumbai'),name('phadke','omkar','satish'),'monitor');
+
+1 row created.
+
+SQL> insert into customer values(2,myaddress('bhandup','78','mumbai'),name('yadav','satyam','sanjay'),'mouse');
+
+1 row created.
+
+SQL> select * from customer where productname='monitor';
+
+       CID
+----------
+CADD(STREET, PINCODE, CITY)
+--------------------------------------------------------------------------------
+CNAME(FNAME, LNAME, MNAME)
+--------------------------------------------------------------------------------
+PRODUCTNAME
+--------------------------------------------------------------------------------
+         1
+MYADDRESS('bhandup', '78', 'mumbai')
+NAME('phadke', 'omkar', 'satish')
+monitor
+
+
+SQL> select * from customer c where c.myaddress.city=(select d.myaddress.city from customer d where d.cid='1');
+select * from customer c where c.myaddress.city=(select d.myaddress.city from customer d where d.cid='1')
+                               *
+ERROR at line 1:
+ORA-00904: "C"."MYADDRESS"."CITY": invalid identifier
+
+
+SQL> select * from customer c where c.myaddress.city=(select d.myaddress.city from customer d where d.cid='1');
+select * from customer c where c.myaddress.city=(select d.myaddress.city from customer d where d.cid='1')
+                               *
+ERROR at line 1:
+ORA-00904: "C"."MYADDRESS"."CITY": invalid identifier
+
+
+SQL> select * from customer c where c.cadd.city=(select d.myaddress.city from customer d where d.cid='1');
+select * from customer c where c.cadd.city=(select d.myaddress.city from customer d where d.cid='1')
+                                                   *
+ERROR at line 1:
+ORA-00904: "D"."MYADDRESS"."CITY": invalid identifier
+
+
+SQL> select * from customer c where c.cadd.city=(select d.cadd.city from customer d where d.cid='1');
+
+       CID
+----------
+CADD(STREET, PINCODE, CITY)
+--------------------------------------------------------------------------------
+CNAME(FNAME, LNAME, MNAME)
+--------------------------------------------------------------------------------
+PRODUCTNAME
+--------------------------------------------------------------------------------
+         1
+MYADDRESS('bhandup', '78', 'mumbai')
+NAME('phadke', 'omkar', 'satish')
+monitor
+
+
+       CID
+----------
+CADD(STREET, PINCODE, CITY)
+--------------------------------------------------------------------------------
+CNAME(FNAME, LNAME, MNAME)
+--------------------------------------------------------------------------------
+PRODUCTNAME
+--------------------------------------------------------------------------------
+         2
+MYADDRESS('bhandup', '78', 'mumbai')
+NAME('yadav', 'satyam', 'sanjay')
+mouse
+
+
+SQL> update customer c set  c.add.city='pune' where c.productname='mouse';
+update customer c set  c.add.city='pune' where c.productname='mouse'
+                         *
+ERROR at line 1:
+ORA-01747: invalid user.table.column, table.column, or column specification
+
+
+SQL> update customer c set  c.cadd.city='pune' where c.productname='mouse';
+
+1 row updated.
+
+SQL> create table tax(eid int,deptid int,deptname varchar(40),taxamt int,sate varchar(50)) partition by range(taxamt)
+  2  (partition p1 less than values(20001),partition p2 less than values(30001),partition p3 less than (50001),partition p4 less than maxvalue);
+(partition p1 less than values(20001),partition p2 less than values(30001),partition p3 less than (50001),partition p4 less than maxvalue)
+              *
+ERROR at line 2:
+ORA-00926: missing VALUES keyword
+
+
+SQL> create table tax(eid int,deptid int,deptname varchar(40),taxamt int,sate varchar(50)) partition by range(taxamt)
+  2    (partition p1  values less than(20001),partition p2  values less than(30001),partition p3 values less than (50001),partition p4 values less than maxvalue);
+  (partition p1  values less than(20001),partition p2  values less than(30001),partition p3 values less than (50001),partition p4 values less than maxvalue)
+                                                                                                                                                   *
+ERROR at line 2:
+ORA-00906: missing left parenthesis
+
+
+SQL> create table tax(eid int,deptid int,deptname varchar(40),taxamt int,sate varchar(50)) partition by range(taxamt)
+  2    (partition p1  values less than(20001),partition p2  values less than(30001),partition p3 values less than (50001),partition p4 values less than (maxvalue));
+
+Table created.
+
+SQL> insert into tax values(1,1,'d',1234,'mh');
+
+1 row created.
+
+SQL> insert into tax values(1,1,'d',123444,'mh');
+
+1 row created.
+
+SQL> insert into tax values(1,1,'d',43444,'mh');
+
+1 row created.
+
+SQL> select * from tax partition(p1,p2,p3,p4);
+select * from tax partition(p1,p2,p3,p4)
+                           *
+ERROR at line 1:
+ORA-00933: SQL command not properly ended
+
+
+SQL> select * from tax partitions(p1,p2,p3,p4);
+select * from tax partitions(p1,p2,p3,p4)
+                            *
+ERROR at line 1:
+ORA-00933: SQL command not properly ended
+
+
+SQL> select * from tax;
+
+       EID     DEPTID DEPTNAME                                     TAXAMT
+---------- ---------- ---------------------------------------- ----------
+SATE
+--------------------------------------------------
+         1          1 d                                              1234
+mh
+
+         1          1 d                                             43444
+mh
+
+         1          1 d                                            123444
+mh
+
+
+SQL> alter table tax merge partitions p1,p2 into partition p12;
+
+Table altered.
+
+SQL> select * from tax partition(p12);
+
+       EID     DEPTID DEPTNAME                                     TAXAMT
+---------- ---------- ---------------------------------------- ----------
+SATE
+--------------------------------------------------
+         1          1 d                                              1234
+mh
+
+
+SQL>
+SQL>

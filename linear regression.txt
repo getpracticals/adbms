@@ -1,0 +1,29 @@
+install.packages("ggplot2")
+library(ggplot2)
+my_data<-mtcars
+my_data
+names(my_data)
+dim(my_data)
+#random
+my_data<-my_data[sample(nrow(my_data),),]
+head(my_data)
+TrainData<-my_data[1:20,]
+TestData<-my_data[21:23,]
+## Linear model
+fit=lm(mpg ~hp,data=mtcars)
+summary(fit)
+preds<-predict(fit,newdata=TestData)
+df1<-data.frame(preds,TestData$mpg)
+head(df1)
+#correlation
+cor(preds,TestData$mp)
+plot(mtcars$hp,mtcars$mpg)
+#BetterModel
+lmmodel1<-lm(mpg~hp+cyl+gear+wt, data=TrainData)
+summary(lmmodel1)
+preds_new<-predict(lmmodel1,newdata=TestData)
+df2<-data.frame(preds_new,TestData$mpg)
+head(df2)
+#correlation
+cor(preds_new,TestData$mp)
+plot(mtcars$hp+mtcars$cyl+mtcars$gear+mtcars$wt,mtcars$mpg)

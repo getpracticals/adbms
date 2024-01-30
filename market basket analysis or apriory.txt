@@ -1,0 +1,12 @@
+#apriori algorithm for association rule mining for market basket analysis
+data=read.csv("C:/satyamADMS/data_apriori.csv")#reading data
+data
+trans=split(data$Products, data$Customer_Id,"Transations")
+trans
+head(trans)
+#install arules library
+install.packages("arules")
+library(arules)
+rules=apriori(trans,parameter = list(support=0.5,confidence=0.9,maxlen=3, minlen2))
+rules
+inspect(rules)
